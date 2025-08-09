@@ -4,7 +4,6 @@ import com.game.entity.Player;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
-import org.hibernate.annotations.NamedQueries;
 import org.hibernate.annotations.NamedQuery;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
@@ -30,23 +29,18 @@ public class PlayerRepositoryDB implements IPlayerRepository {
     @Override
     public List<Player> getAll(int pageNumber, int pageSize) {
         try (Session session = sessionFactory.openSession()){
-            NativeQuery<Player> nativeQuery = session.createNativeQuery("select * from rpg.player OFFSET :pageNumber LIMIT :pageSize",  Player.class);
-            nativeQuery.setParameter("pageNumber", pageNumber *  pageSize);
-            nativeQuery.setParameter("pageSize", pageSize);
-//            Query<Player> query = session.createQuery("select p FROM Player p", Player.class);
-//            query.setFirstResult(pageNumber * pageSize);
-//            query.setMaxResults(pageSize);
+            NativeQuery<Player> nativeQuery = session.createNativeQuery("select * from rpg.player",  Player.class);
+            nativeQuery.setFirstResult(pageNumber  * pageSize);
+            nativeQuery.setMaxResults(pageSize);
             return nativeQuery.getResultList();
         }
     }
     @Override
     public int getAllCount() {
-        int result = 0;
         try (Session session = sessionFactory.openSession()){
-            Query<Long> query = session.createQuery("select count(p) FROM Player p", Long.class);
-            result = Math.toIntExact(query.getSingleResult());
+            Query<Long> query = session.createNamedQuery("getAllCount", Long.class);
+            return Math.toIntExact(query.getSingleResult());
         }
-        return result;
     }
 
     @Override
@@ -59,7 +53,7 @@ public class PlayerRepositoryDB implements IPlayerRepository {
             return player;
         }
         catch (Exception e) {
-            throw  new RuntimeException();
+            throw new RuntimeException();
         }
     }
 
